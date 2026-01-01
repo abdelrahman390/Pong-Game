@@ -3,17 +3,66 @@
 #include <string>
 using namespace std;
 
-/*
-test comment
-*/
+class Player{
+protected:
+    int paddle_pos_start = GetScreenHeight() / 4;
+    int paddle_pos_end = GetScreenHeight() / 2;
+    int maximum_boundaries = GetScreenHeight();
+    int score = 0;
+
+public:
+    // If the value of c == u, this means going up, but if the value of c == d, this means going down.
+    void move_paddle(char c){
+        if(c == 'u' && paddle_pos_start - 1 >= 0){
+            paddle_pos_start = max(0, paddle_pos_start - 1);
+            paddle_pos_end--;
+        } else if(c == 'd' && paddle_pos_end + 1 <= maximum_boundaries){
+            paddle_pos_end = min(maximum_boundaries, paddle_pos_end + 1);
+            paddle_pos_start++;
+        }
+    }
+
+    virtual void draw_paddle() = 0;
+
+    int getScore() {
+        return score;
+    }
+
+    void increaseScore() {
+        score++;
+    }
+
+    void resetScore() {
+        score = 0;
+    }
+};
+
+
+class LeftPlayer : public Player {
+    
+public:
+    void draw_paddle(){
+        // DrawLineEx({20, (float)GetScreenHeight() / 4}, {20, (float)GetScreenHeight() / 2}, 5, GREEN); 
+        DrawLineEx({20, (float)paddle_pos_start}, {20, (float)paddle_pos_end}, 5, GREEN); 
+    }
+};
+
+class rightPlayer : public Player {
+    
+public:
+    void draw_paddle(){
+        DrawLineEx({(float)GetScreenWidth() - 20, (float)paddle_pos_start}, {(float)GetScreenWidth() - 20, (float)paddle_pos_end}, 5, GREEN); 
+    }
+};
+
 
 class GameScreen
 {
 private:
     Color bg_color = {255, 255, 255, 255};
     Color border_color = BLUE;
-    float screen_width = 1200;
-    float screen_height = 800;
+    float screen_width = 800;
+    float screen_height = 500;
     const char *game_title = "Ping Pong Game";
 
     void draw_borders()
@@ -76,19 +125,20 @@ private:
     bool game_end = false;
     int winner = 0;
 
-    int score1 = 0;
-    int score2 = 0;
+    LeftPlayer lPlayer;
+    rightPlayer rPlayer;
+
     int winner_score = 5;
 
     bool check_win()
     {
-        if (score1 >= winner_score)
+        if (lPlayer.getScore() >= winner_score)
         {
             winner = 1;
             screen.draw_end_screen(1);
             return true;
         }
-        else if (score2 >= winner_score)
+        else if (rPlayer.getScore() >= winner_score)
         {
             winner = 2;
             screen.draw_end_screen(2);
@@ -99,19 +149,19 @@ private:
 
     void reset_score()
     {
-        score1 = 0;
-        score2 = 0;
+        lPlayer.resetScore();
+        rPlayer.resetScore();
     }
 
     void increase_score(int player)
     {
         if (player == 1)
         {
-            score1++;
+            lPlayer.increaseScore();
         }
         else if (player == 2)
         {
-            score2++;
+           rPlayer.increaseScore();
         }
     }
 
@@ -126,11 +176,40 @@ public:
             ClearBackground(BLACK);
             if (game_state == 1) // while game is on / in game
             {
-                screen.draw_screen(score1, score2);
+                int lS = lPlayer.getScore();
+                int rS = rPlayer.getScore();
+
+                screen.draw_screen(lS, rS);
+
+                lPlayer.draw_paddle();
+                rPlayer.draw_paddle();
                 if (check_win())
                 {
                     game_state = 0;
                     game_end = true;
+                }
+
+
+                // Move left paddale up 
+                if (IsKeyPressed(KEY_W) || IsKeyDown(KEY_W))
+                {
+                    lPlayer.move_paddle('u');
+                }
+                // Move left paddale down
+                if (IsKeyPressed(KEY_S) || IsKeyDown(KEY_S))
+                {
+                    lPlayer.move_paddle('d');
+                }
+
+                // Move right paddale up
+                if (IsKeyPressed(KEY_UP) || IsKeyDown(KEY_UP))
+                {
+                    rPlayer.move_paddle('u');
+                }
+                // Move right paddale down
+                if (IsKeyPressed(KEY_DOWN) || IsKeyDown(KEY_DOWN))
+                {
+                    rPlayer.move_paddle('d');
                 }
 
                 // press backspace to reset game
@@ -139,16 +218,17 @@ public:
                     game_state = 0;
                     game_end = true;
                 }
-                // press keypad 1 to increase player 1 score
-                if (IsKeyPressed(KEY_KP_1))
-                {
-                    increase_score(1);
-                }
-                // press keypad 2 to increase player 2 score
-                if (IsKeyPressed(KEY_KP_2))
-                {
-                    increase_score(2);
-                }
+
+                // when left player scores a goal 
+                // if(){
+                //     lPlayer.increaseScore();
+                // }
+
+                // when right player scores a goal 
+                // if(){
+                //     rPlayer.increaseScore();
+                // }
+
                 // press keypad 3 to reset scores
                 if (IsKeyPressed(KEY_KP_3))
                 {
@@ -164,21 +244,46 @@ public:
                     game_state = 1;
                     cout << "enter pressed" << endl;
                 }
-                if (IsKeyPressed(KEY_DOWN))
+
+                
+                // Move left paddale up 
+                if (IsKeyPressed(KEY_W) || IsKeyDown(KEY_W))
                 {
-                    if (fps == 30)
-                        fps = 30;
-                    else
-                    {
-                        fps -= 10;
-                        SetTargetFPS(fps);
-                    }
+                    lPlayer.move_paddle('u');
                 }
-                if (IsKeyPressed(KEY_UP))
+                // Move left paddale down
+                if (IsKeyPressed(KEY_S) || IsKeyDown(KEY_S))
                 {
-                    fps += 10;
-                    SetTargetFPS(fps);
+                    lPlayer.move_paddle('d');
                 }
+
+                // Move right paddale up
+                if (IsKeyPressed(KEY_UP) || IsKeyDown(KEY_UP))
+                {
+                    rPlayer.move_paddle('u');
+                }
+                // Move right paddale down
+                if (IsKeyPressed(KEY_DOWN) || IsKeyDown(KEY_DOWN))
+                {
+                    rPlayer.move_paddle('d');
+                }
+
+                // press backspace to reset game
+                if (IsKeyPressed(KEY_BACKSPACE))
+                {
+                    game_state = 0;
+                    game_end = true;
+                }
+
+                // when left player scores a goal 
+                // if(){
+                //     lPlayer.increaseScore();
+                // }
+
+                // when right player scores a goal 
+                // if(){
+                //     rPlayer.increaseScore();
+                // }
             }
             else if (game_state == 0 && game_end == true) // end game / after game ended
             {
