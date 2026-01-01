@@ -1,6 +1,0 @@
-*.exe
-*.dsym
-main
-.vscode
-.gitattributes
-main.code-workspace
