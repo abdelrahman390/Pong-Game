@@ -3,6 +3,10 @@
 #include <string>
 using namespace std;
 
+/*
+test comment
+*/
+
 class GameScreen
 {
 private:
