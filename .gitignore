@@ -1,3 +1,21 @@
 *.exe
 *.dsym
 main
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Build output
+x64/
+Debug/
+Release/
+
+# C++ objects
+*.obj
+*.pdb
+*.ilk
+*.log
